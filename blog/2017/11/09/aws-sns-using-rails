@@ -1,0 +1,230 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv='X-UA-Compatible' content='IE=edge;chrome=1' />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Blog Title - AWS SNS Using Rails</title>
+    <link rel="alternate" type="application/atom+xml" title="Atom Feed" href="/blog/feed.xml" />
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href="/stylesheets/site.css" rel="stylesheet" />
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <link rel="shortcut icon" type="image/png" href="/images/favicon.ico"/>
+  </head>
+  <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">
+            <img src="/images/logo.png" alt="Sathishkumar Jayaraj" />
+          </a>
+        </div>
+        <div class="collapse navbar-collapse" id="myNavbar">
+          <ul class="nav navbar-nav">
+            <li>
+              <a href="/about">About</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+
+  <div class="container">
+
+    <hr />
+
+<h1 id="how-to-set-up-sns-on-aws-so-you-can-track-bounce-complaint-and-delivery-from-rails">How to set up SNS on AWS so you can track bounce, complaint and delivery from Rails.</h1>
+
+<p>Sending emails using AWS smtp from Rails is easy. Initially new users are placed in the Amazon SES sandbox. Here, the user can send mails within the verified email addresses and domains. Also the maximum limit of sending messages is 200/day. To improve this restriction, user have to open case in support center.</p>
+
+<p>Once the user moved out from sandbox mode, user can able to mail anywhere through the verified domain/email addresses. AWS provides a concept called SNS (simple notification service) where the user can handle bounce, complaint and delivery rate. This notification source can be of email, http/https JSON type.</p>
+
+<h3 id="add-bouncecomplaintdelivery-handler-to-rails-app">Add bounce/complaint/delivery handler to Rails App</h3>
+
+<h4 id="db-schema">1. DB schema</h4>
+<p><code>ruby?line_numbers=false
+class CreateTrackings &lt; ActiveRecord::Migration
+  def change
+    create_table :trackings do |t|
+      t.string :source
+      t.string :destination
+      t.string :message_id
+      t.string :notify_type
+      t.string :bounce_type
+      t.string :bounce_subtype
+      t.string :bounce_action
+      t.string :bounce_status
+      t.text :bounce_diagnostic_code
+      t.boolean :is_delivered
+      t.boolean :is_spam
+      t.text :delivered_response
+      t.date :mail_timestamp
+      t.timestamps
+    end
+  end
+end
+ </code></p>
+
+<h4 id="model">2. Model</h4>
+<p><code>ruby?line_numbers=false
+  class Tracking &lt; ActiveRecord::Base
+    validates_presence_of :destination
+  end
+</code>
+#### 3. Gemfile
+<code>ruby?line_numbers=false
+  gem "aws_sns_subscription"
+</code>
+#### 4. Controller
+```ruby?line_numbers=false
+  require 'json'
+  class AwsController &lt; ApplicationController
+  skip_before_action :verify_authenticity_token
+  before_filter :respond_to_aws_sns_subscription_confirmations
+  before_action :data, :message</p>
+
+<p>def bounce
+    begin
+    # raise exception if the request is not of bounce type
+    raise unless message['notificationType'] == "Bounce"
+    mail = message['mail']
+    bounce = message['bounce']
+    recipients = bounce['bouncedRecipients']
+    # process each delivery recipients and update in the table
+    recipients.each do |recp|
+    @track = validation[:domain].trackings.where(source: mail['source'], message_id: mail['messageId']).first
+      if @track.blank?
+        validation[:domain].trackings.create(mail_timestamp: mail['timestamp'].to_date, source: mail['source'], message_id: mail['messageId'], destination: recp['emailAddress'], notify_type: message['notificationType'], bounce_type: bounce['bounceType'], bounce_subtype: bounce['bounceSubType'], bounce_action: recp['action'], bounce_status: recp['status'], bounce_diagnostic_code: recp['diagnosticCode'])
+      else
+        @track.update(mail_timestamp: mail['timestamp'].to_date, destination: recp['emailAddress'], notify_type: message['notificationType'], bounce_type: bounce['bounceType'], bounce_subtype: bounce['bounceSubType'], bounce_action: recp['action'], bounce_status: recp['status'], bounce_diagnostic_code: recp['diagnosticCode'])
+      end
+    end
+      render json: {}
+    rescue Exception =&gt; e
+      render json: {}
+    end
+  end</p>
+
+<p>def complaint
+    begin
+      # raise exception if the request is not of complaint type
+      raise unless message['notificationType'] == "Complaint"
+      mail = message['mail']
+      complaint = message['complaint']
+      recipients = complaint['complainedRecipients']
+      # process each delivery recipients and update in the table
+      recipients.each do |recp|
+        @track = validation[:domain].trackings.where(source: mail['source'], message_id: mail['messageId']).first
+        if @track.blank?
+          validation[:domain].trackings.create(mail_timestamp: mail['timestamp'].to_date, source: mail['source'], message_id: mail['messageId'], destination: recp['emailAddress'], notify_type: message['notificationType'], is_spam: true)
+        else
+          @track.update(mail_timestamp: mail['timestamp'].to_date, destination: recp['emailAddress'], notify_type: message['notificationType'], is_spam: true)
+        end
+      end
+      render json: {}
+    rescue Exception =&gt; e
+      render json: {}
+    end
+  end</p>
+
+<p>def delivered
+    begin
+      # raise exception if the request is not of delivery type
+      raise unless message['notificationType'] == "Delivery"</p>
+
+<pre><code>  mail = message['mail']
+  delivery = message['delivery']
+  recipients = delivery['recipients']
+  # process each delivery recipients and update in the table
+  recipients.each do |recp|
+    @track = validation[:domain].trackings.where(source: mail['source'], message_id: mail['messageId']).first
+    if @track.blank?
+      validation[:domain].trackings.create(mail_timestamp: mail['timestamp'].to_date, source: mail['source'], message_id: mail['messageId'], destination: recp, notify_type: message['notificationType'], is_delivered: true, delivered_response: delivery['smtpResponse'])
+    else
+      @track.update(mail_timestamp: mail['timestamp'].to_date, destination: recp, notify_type: message['notificationType'], is_delivered: true, delivered_response: delivery['smtpResponse'])
+    end
+  end
+  render json: {}
+rescue Exception =&gt; e
+  render json: {}
+end   end
+</code></pre>
+
+<p>protected</p>
+
+<pre><code>def data
+  JSON.parse(request.raw_post)
+end
+
+def message
+  message ||= JSON.parse JSON.parse(request.raw_post)['Message']
+end   end ```
+</code></pre>
+
+<h4 id="routes">5. Routes</h4>
+
+<p><code>ruby?line_numbers=false
+  post    "/aws/handler/bounce"            =&gt;  "aws#bounce"
+  post    "/aws/handler/complaint"         =&gt;  "aws#complaint"
+  post    "/aws/handler/delivered"         =&gt;  "aws#delivered"
+</code></p>
+
+<p>Create http/https endpoint to the required topic with the provided url's (routes.rb).</p>
+
+<p>Migrate the database, install the gem and start handling the tracks.</p>
+
+
+    <aside>
+      <h2>Recent Articles</h2>
+      <ol>
+          <li>
+            <a href="/blog/2017/11/09/aws-sns-using-rails">AWS SNS Using Rails</a>
+            <span>Nov  9</span>
+          </li>
+      </ol>
+
+      <h2>Tags</h2>
+      <ol>
+          <li><a href="/blog/tags/aws-sns.html">AWS SNS (1)</a></li>
+      </ol>
+
+      <h2>By Year</h2>
+      <ol>
+          <li><a href="/blog/2017.html">2017 (1)</a></li>
+      </ol>
+    </aside>
+  </div>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12 text-center">
+      <hr />
+      <a class="social-link" title="Visit me on Facebook" href="https://facebook.com/sathishkumar437" target="_blank" rel="noopener noreferrer" data-reactid="75">Facebook</a>
+      <a class="social-link" title="Visit me on LinkedIn" href="https://www.linkedin.com/in/sathishkumar-jayaraj" target="_blank" rel="noopener noreferrer" data-reactid="78">LinkedIn</a>
+      <a class="social-link" title="Visit me on GitHub" href="https://github.com/sathishkumar-jayaraj" target="_blank" rel="noopener noreferrer" data-reactid="81">Github</a>
+      <a class="social-link" title="Visit me on AngelList" href="https://angel.co/sathishkumar-jayaraj" target="_blank" rel="noopener noreferrer" data-reactid="84">Angel.co</a>
+      <a class="social-link" title="Visit me on Twitter" href="https://twitter.com/sathish_jayaraj" target="_blank" rel="noopener noreferrer" data-reactid="87">Twitter</a>
+      <a class="social-link" title="Visit me on Instagram" href="https://instagram.com/sathishkumar_jayaraj" target="_blank" rel="noopener noreferrer" data-reactid="90">Instagram</a>
+      <a class="social-link" title="Visit me on Stack Overflow" href="https://stackoverflow.com/users/4745028/sathishkumar-jayaraj" target="_blank" rel="noopener noreferrer" data-reactid="93">Stackoverflow</a>
+  </div>
+  <div class="col-xs-12 text-center small-spaced small-spaced-bottom">
+    <p>Copyright &copy; Sathishkumar. All Rights Reserved.</p>
+  </div>
+  </div>
+</div>
+</body></html>
