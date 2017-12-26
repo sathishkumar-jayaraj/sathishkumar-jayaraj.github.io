@@ -1,3 +1,4 @@
+require 'builder'
 ###
 # Page options, layouts, aliases and proxies
 ###
@@ -8,6 +9,7 @@
 page '/*.xml', layout: false
 page '/*.json', layout: false
 page '/*.txt', layout: false
+page "/sitemap.xml", :layout => false
 
 # With alternative layout
 # page "/path/to/file.html", layout: :otherlayout
@@ -20,11 +22,13 @@ page '/*.txt', layout: false
 # Helpers
 ###
 
+Time.zone = "Kolkata"
+
 activate :blog do |blog|
   # This will add a prefix to all links, template references and source paths
   blog.prefix = "blog"
 
-  blog.permalink = "{year}/{month}/{day}/{title}"
+  # blog.permalink = "{year}/{month}/{day}/{title}"
   # Matcher for blog source files
   # blog.sources = "{year}-{month}-{day}-{title}"
   # blog.taglink = "tags/{tag}"
@@ -73,3 +77,12 @@ activate:deploy do |deploy|
 end
 
 activate :livereload
+
+# Activate syntax highlighter
+activate :syntax
+set :markdown_engine, :redcarpet
+set :markdown, :fenced_code_blocks => true, :smartypants => true
+
+# config.rb
+activate :robots, :rules => [{ user_agent: '*', allow: %w(/) }],
+  sitemap: "https://sathishkumar.co/sitemap.xml"
