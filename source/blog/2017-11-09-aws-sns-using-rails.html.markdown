@@ -1,7 +1,7 @@
 ---
 title: AWS SNS Using Rails
 date: 2017-11-09
-link: aws-sns-using-rails
+tags: AWS
 ---
 ---
 
