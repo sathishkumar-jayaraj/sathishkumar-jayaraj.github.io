@@ -2,161 +2,151 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>Blog Name</title>
   <subtitle>Blog subtitle</subtitle>
-  <id>http://blog.url.com/blog</id>
-  <link href="http://blog.url.com/blog"/>
-  <link href="http://blog.url.com/feed.xml" rel="self"/>
+  <link href="https://sathishkumar.co/feed.xml" rel="self"/>
   <updated>2017-11-09T05:30:00+05:30</updated>
   <author>
-    <name>Blog Author</name>
+    <name>Sathishkumar Jayaraj</name>
   </author>
   <entry>
     <title>AWS SNS Using Rails</title>
-    <link rel="alternate" href="http://blog.url.com/blog/2017/11/09/aws-sns-using-rails.html"/>
-    <id>http://blog.url.com/blog/2017/11/09/aws-sns-using-rails.html</id>
+    <link rel="alternate" href="https://sathishkumar.co/blog/2017/11/09/aws-sns-using-rails"/>
+    <id>https://sathishkumar.co/blog/2017/11/09/aws-sns-using-rails</id>
     <published>2017-11-09T05:30:00+05:30</published>
-    <updated>2017-12-21T10:24:29+05:30</updated>
+    <updated>2017-12-26T14:40:09+05:30</updated>
     <author>
       <name>Article Author</name>
     </author>
-    <content type="html">&lt;hr /&gt;
+    <content type="html">&lt;hr&gt;
 
-&lt;h1 id="how-to-set-up-sns-on-aws-so-you-can-track-bounce-complaint-and-delivery-from-rails"&gt;How to set up SNS on AWS so you can track bounce, complaint and delivery from Rails.&lt;/h1&gt;
+&lt;h1&gt;How to set up SNS on AWS so you can track bounce, complaint and delivery from Rails.&lt;/h1&gt;
 
 &lt;p&gt;Sending emails using AWS smtp from Rails is easy. Initially new users are placed in the Amazon SES sandbox. Here, the user can send mails within the verified email addresses and domains. Also the maximum limit of sending messages is 200/day. To improve this restriction, user have to open case in support center.&lt;/p&gt;
 
 &lt;p&gt;Once the user moved out from sandbox mode, user can able to mail anywhere through the verified domain/email addresses. AWS provides a concept called SNS (simple notification service) where the user can handle bounce, complaint and delivery rate. This notification source can be of email, http/https JSON type.&lt;/p&gt;
 
-&lt;h3 id="add-bouncecomplaintdelivery-handler-to-rails-app"&gt;Add bounce/complaint/delivery handler to Rails App&lt;/h3&gt;
+&lt;h3&gt;Add bounce/complaint/delivery handler to Rails App&lt;/h3&gt;
 
-&lt;h4 id="db-schema"&gt;1. DB schema&lt;/h4&gt;
-&lt;p&gt;&lt;code&gt;ruby?line_numbers=false
-class CreateTrackings &amp;lt; ActiveRecord::Migration
-  def change
-    create_table :trackings do |t|
-      t.string :source
-      t.string :destination
-      t.string :message_id
-      t.string :notify_type
-      t.string :bounce_type
-      t.string :bounce_subtype
-      t.string :bounce_action
-      t.string :bounce_status
-      t.text :bounce_diagnostic_code
-      t.boolean :is_delivered
-      t.boolean :is_spam
-      t.text :delivered_response
-      t.date :mail_timestamp
-      t.timestamps
-    end
-  end
-end
- &lt;/code&gt;&lt;/p&gt;
+&lt;h4&gt;1. DB schema&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre class="highlight ruby"&gt;&lt;code&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;CreateTrackings&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="no"&gt;ActiveRecord&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="no"&gt;Migration&lt;/span&gt;
+  &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;change&lt;/span&gt;
+    &lt;span class="n"&gt;create_table&lt;/span&gt; &lt;span class="ss"&gt;:trackings&lt;/span&gt; &lt;span class="k"&gt;do&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;
+      &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;string&lt;/span&gt; &lt;span class="ss"&gt;:source&lt;/span&gt;
+      &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;string&lt;/span&gt; &lt;span class="ss"&gt;:destination&lt;/span&gt;
+      &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;string&lt;/span&gt; &lt;span class="ss"&gt;:message_id&lt;/span&gt;
+      &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;string&lt;/span&gt; &lt;span class="ss"&gt;:notify_type&lt;/span&gt;
+      &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;string&lt;/span&gt; &lt;span class="ss"&gt;:bounce_type&lt;/span&gt;
+      &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;string&lt;/span&gt; &lt;span class="ss"&gt;:bounce_subtype&lt;/span&gt;
+      &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;string&lt;/span&gt; &lt;span class="ss"&gt;:bounce_action&lt;/span&gt;
+      &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;string&lt;/span&gt; &lt;span class="ss"&gt;:bounce_status&lt;/span&gt;
+      &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;text&lt;/span&gt; &lt;span class="ss"&gt;:bounce_diagnostic_code&lt;/span&gt;
+      &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;boolean&lt;/span&gt; &lt;span class="ss"&gt;:is_delivered&lt;/span&gt;
+      &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;boolean&lt;/span&gt; &lt;span class="ss"&gt;:is_spam&lt;/span&gt;
+      &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;text&lt;/span&gt; &lt;span class="ss"&gt;:delivered_response&lt;/span&gt;
+      &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;date&lt;/span&gt; &lt;span class="ss"&gt;:mail_timestamp&lt;/span&gt;
+      &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;timestamps&lt;/span&gt;
+    &lt;span class="k"&gt;end&lt;/span&gt;
+  &lt;span class="k"&gt;end&lt;/span&gt;
+&lt;span class="k"&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h4&gt;2. Model&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre class="highlight ruby"&gt;&lt;code&gt;  &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Tracking&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="no"&gt;ActiveRecord&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="no"&gt;Base&lt;/span&gt;
+    &lt;span class="n"&gt;validates_presence_of&lt;/span&gt; &lt;span class="ss"&gt;:destination&lt;/span&gt;
+  &lt;span class="k"&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h4&gt;3. Gemfile&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre class="highlight ruby"&gt;&lt;code&gt;  &lt;span class="n"&gt;gem&lt;/span&gt; &lt;span class="s2"&gt;"aws_sns_subscription"&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h4&gt;4. Controller&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre class="highlight ruby"&gt;&lt;code&gt;  &lt;span class="nb"&gt;require&lt;/span&gt; &lt;span class="s1"&gt;'json'&lt;/span&gt;
+  &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;AwsController&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="no"&gt;ApplicationController&lt;/span&gt;
+  &lt;span class="n"&gt;skip_before_action&lt;/span&gt; &lt;span class="ss"&gt;:verify_authenticity_token&lt;/span&gt;
+  &lt;span class="n"&gt;before_filter&lt;/span&gt; &lt;span class="ss"&gt;:respond_to_aws_sns_subscription_confirmations&lt;/span&gt;
+  &lt;span class="n"&gt;before_action&lt;/span&gt; &lt;span class="ss"&gt;:data&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="ss"&gt;:message&lt;/span&gt;
 
-&lt;h4 id="model"&gt;2. Model&lt;/h4&gt;
-&lt;p&gt;&lt;code&gt;ruby?line_numbers=false
-  class Tracking &amp;lt; ActiveRecord::Base
-    validates_presence_of :destination
-  end
-&lt;/code&gt;
-#### 3. Gemfile
-&lt;code&gt;ruby?line_numbers=false
-  gem "aws_sns_subscription"
-&lt;/code&gt;
-#### 4. Controller
-```ruby?line_numbers=false
-  require 'json'
-  class AwsController &amp;lt; ApplicationController
-  skip_before_action :verify_authenticity_token
-  before_filter :respond_to_aws_sns_subscription_confirmations
-  before_action :data, :message&lt;/p&gt;
+  &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;bounce&lt;/span&gt;
+    &lt;span class="k"&gt;begin&lt;/span&gt;
+    &lt;span class="c1"&gt;# raise exception if the request is not of bounce type&lt;/span&gt;
+    &lt;span class="k"&gt;raise&lt;/span&gt; &lt;span class="k"&gt;unless&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'notificationType'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s2"&gt;"Bounce"&lt;/span&gt;
+    &lt;span class="n"&gt;mail&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'mail'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;bounce&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'bounce'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;recipients&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;bounce&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'bouncedRecipients'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="c1"&gt;# process each delivery recipients and update in the table&lt;/span&gt;
+    &lt;span class="n"&gt;recipients&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;each&lt;/span&gt; &lt;span class="k"&gt;do&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="n"&gt;recp&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;
+    &lt;span class="vi"&gt;@track&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;validation&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="ss"&gt;:domain&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="nf"&gt;trackings&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;where&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="ss"&gt;source: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'source'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;message_id: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'messageId'&lt;/span&gt;&lt;span class="p"&gt;]).&lt;/span&gt;&lt;span class="nf"&gt;first&lt;/span&gt;
+      &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vi"&gt;@track&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;blank?&lt;/span&gt;
+        &lt;span class="n"&gt;validation&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="ss"&gt;:domain&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="nf"&gt;trackings&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;create&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="ss"&gt;mail_timestamp: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'timestamp'&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="nf"&gt;to_date&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="ss"&gt;source: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'source'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;message_id: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'messageId'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;destination: &lt;/span&gt;&lt;span class="n"&gt;recp&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'emailAddress'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;notify_type: &lt;/span&gt;&lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'notificationType'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;bounce_type: &lt;/span&gt;&lt;span class="n"&gt;bounce&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'bounceType'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;bounce_subtype: &lt;/span&gt;&lt;span class="n"&gt;bounce&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'bounceSubType'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;bounce_action: &lt;/span&gt;&lt;span class="n"&gt;recp&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'action'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;bounce_status: &lt;/span&gt;&lt;span class="n"&gt;recp&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'status'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;bounce_diagnostic_code: &lt;/span&gt;&lt;span class="n"&gt;recp&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'diagnosticCode'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+      &lt;span class="k"&gt;else&lt;/span&gt;
+        &lt;span class="vi"&gt;@track&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;update&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="ss"&gt;mail_timestamp: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'timestamp'&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="nf"&gt;to_date&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="ss"&gt;destination: &lt;/span&gt;&lt;span class="n"&gt;recp&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'emailAddress'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;notify_type: &lt;/span&gt;&lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'notificationType'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;bounce_type: &lt;/span&gt;&lt;span class="n"&gt;bounce&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'bounceType'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;bounce_subtype: &lt;/span&gt;&lt;span class="n"&gt;bounce&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'bounceSubType'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;bounce_action: &lt;/span&gt;&lt;span class="n"&gt;recp&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'action'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;bounce_status: &lt;/span&gt;&lt;span class="n"&gt;recp&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'status'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;bounce_diagnostic_code: &lt;/span&gt;&lt;span class="n"&gt;recp&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'diagnosticCode'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+      &lt;span class="k"&gt;end&lt;/span&gt;
+    &lt;span class="k"&gt;end&lt;/span&gt;
+      &lt;span class="n"&gt;render&lt;/span&gt; &lt;span class="ss"&gt;json: &lt;/span&gt;&lt;span class="p"&gt;{}&lt;/span&gt;
+    &lt;span class="k"&gt;rescue&lt;/span&gt; &lt;span class="no"&gt;Exception&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;
+      &lt;span class="n"&gt;render&lt;/span&gt; &lt;span class="ss"&gt;json: &lt;/span&gt;&lt;span class="p"&gt;{}&lt;/span&gt;
+    &lt;span class="k"&gt;end&lt;/span&gt;
+  &lt;span class="k"&gt;end&lt;/span&gt;
 
-&lt;p&gt;def bounce
-    begin
-    # raise exception if the request is not of bounce type
-    raise unless message['notificationType'] == "Bounce"
-    mail = message['mail']
-    bounce = message['bounce']
-    recipients = bounce['bouncedRecipients']
-    # process each delivery recipients and update in the table
-    recipients.each do |recp|
-    @track = validation[:domain].trackings.where(source: mail['source'], message_id: mail['messageId']).first
-      if @track.blank?
-        validation[:domain].trackings.create(mail_timestamp: mail['timestamp'].to_date, source: mail['source'], message_id: mail['messageId'], destination: recp['emailAddress'], notify_type: message['notificationType'], bounce_type: bounce['bounceType'], bounce_subtype: bounce['bounceSubType'], bounce_action: recp['action'], bounce_status: recp['status'], bounce_diagnostic_code: recp['diagnosticCode'])
-      else
-        @track.update(mail_timestamp: mail['timestamp'].to_date, destination: recp['emailAddress'], notify_type: message['notificationType'], bounce_type: bounce['bounceType'], bounce_subtype: bounce['bounceSubType'], bounce_action: recp['action'], bounce_status: recp['status'], bounce_diagnostic_code: recp['diagnosticCode'])
-      end
-    end
-      render json: {}
-    rescue Exception =&amp;gt; e
-      render json: {}
-    end
-  end&lt;/p&gt;
+  &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;complaint&lt;/span&gt;
+    &lt;span class="k"&gt;begin&lt;/span&gt;
+      &lt;span class="c1"&gt;# raise exception if the request is not of complaint type&lt;/span&gt;
+      &lt;span class="k"&gt;raise&lt;/span&gt; &lt;span class="k"&gt;unless&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'notificationType'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s2"&gt;"Complaint"&lt;/span&gt;
+      &lt;span class="n"&gt;mail&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'mail'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+      &lt;span class="n"&gt;complaint&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'complaint'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+      &lt;span class="n"&gt;recipients&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;complaint&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'complainedRecipients'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+      &lt;span class="c1"&gt;# process each delivery recipients and update in the table&lt;/span&gt;
+      &lt;span class="n"&gt;recipients&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;each&lt;/span&gt; &lt;span class="k"&gt;do&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="n"&gt;recp&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;
+        &lt;span class="vi"&gt;@track&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;validation&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="ss"&gt;:domain&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="nf"&gt;trackings&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;where&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="ss"&gt;source: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'source'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;message_id: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'messageId'&lt;/span&gt;&lt;span class="p"&gt;]).&lt;/span&gt;&lt;span class="nf"&gt;first&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vi"&gt;@track&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;blank?&lt;/span&gt;
+          &lt;span class="n"&gt;validation&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="ss"&gt;:domain&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="nf"&gt;trackings&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;create&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="ss"&gt;mail_timestamp: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'timestamp'&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="nf"&gt;to_date&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="ss"&gt;source: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'source'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;message_id: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'messageId'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;destination: &lt;/span&gt;&lt;span class="n"&gt;recp&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'emailAddress'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;notify_type: &lt;/span&gt;&lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'notificationType'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;is_spam: &lt;/span&gt;&lt;span class="kp"&gt;true&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;else&lt;/span&gt;
+          &lt;span class="vi"&gt;@track&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;update&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="ss"&gt;mail_timestamp: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'timestamp'&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="nf"&gt;to_date&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="ss"&gt;destination: &lt;/span&gt;&lt;span class="n"&gt;recp&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'emailAddress'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;notify_type: &lt;/span&gt;&lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'notificationType'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;is_spam: &lt;/span&gt;&lt;span class="kp"&gt;true&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;end&lt;/span&gt;
+      &lt;span class="k"&gt;end&lt;/span&gt;
+      &lt;span class="n"&gt;render&lt;/span&gt; &lt;span class="ss"&gt;json: &lt;/span&gt;&lt;span class="p"&gt;{}&lt;/span&gt;
+    &lt;span class="k"&gt;rescue&lt;/span&gt; &lt;span class="no"&gt;Exception&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;
+      &lt;span class="n"&gt;render&lt;/span&gt; &lt;span class="ss"&gt;json: &lt;/span&gt;&lt;span class="p"&gt;{}&lt;/span&gt;
+    &lt;span class="k"&gt;end&lt;/span&gt;
+  &lt;span class="k"&gt;end&lt;/span&gt;
 
-&lt;p&gt;def complaint
-    begin
-      # raise exception if the request is not of complaint type
-      raise unless message['notificationType'] == "Complaint"
-      mail = message['mail']
-      complaint = message['complaint']
-      recipients = complaint['complainedRecipients']
-      # process each delivery recipients and update in the table
-      recipients.each do |recp|
-        @track = validation[:domain].trackings.where(source: mail['source'], message_id: mail['messageId']).first
-        if @track.blank?
-          validation[:domain].trackings.create(mail_timestamp: mail['timestamp'].to_date, source: mail['source'], message_id: mail['messageId'], destination: recp['emailAddress'], notify_type: message['notificationType'], is_spam: true)
-        else
-          @track.update(mail_timestamp: mail['timestamp'].to_date, destination: recp['emailAddress'], notify_type: message['notificationType'], is_spam: true)
-        end
-      end
-      render json: {}
-    rescue Exception =&amp;gt; e
-      render json: {}
-    end
-  end&lt;/p&gt;
+  &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;delivered&lt;/span&gt;
+    &lt;span class="k"&gt;begin&lt;/span&gt;
+      &lt;span class="c1"&gt;# raise exception if the request is not of delivery type&lt;/span&gt;
+      &lt;span class="k"&gt;raise&lt;/span&gt; &lt;span class="k"&gt;unless&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'notificationType'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s2"&gt;"Delivery"&lt;/span&gt;
 
-&lt;p&gt;def delivered
-    begin
-      # raise exception if the request is not of delivery type
-      raise unless message['notificationType'] == "Delivery"&lt;/p&gt;
+      &lt;span class="n"&gt;mail&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'mail'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+      &lt;span class="n"&gt;delivery&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'delivery'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+      &lt;span class="n"&gt;recipients&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;delivery&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'recipients'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+      &lt;span class="c1"&gt;# process each delivery recipients and update in the table&lt;/span&gt;
+      &lt;span class="n"&gt;recipients&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;each&lt;/span&gt; &lt;span class="k"&gt;do&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="n"&gt;recp&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;
+        &lt;span class="vi"&gt;@track&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;validation&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="ss"&gt;:domain&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="nf"&gt;trackings&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;where&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="ss"&gt;source: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'source'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;message_id: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'messageId'&lt;/span&gt;&lt;span class="p"&gt;]).&lt;/span&gt;&lt;span class="nf"&gt;first&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vi"&gt;@track&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;blank?&lt;/span&gt;
+          &lt;span class="n"&gt;validation&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="ss"&gt;:domain&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="nf"&gt;trackings&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;create&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="ss"&gt;mail_timestamp: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'timestamp'&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="nf"&gt;to_date&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="ss"&gt;source: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'source'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;message_id: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'messageId'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;destination: &lt;/span&gt;&lt;span class="n"&gt;recp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="ss"&gt;notify_type: &lt;/span&gt;&lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'notificationType'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;is_delivered: &lt;/span&gt;&lt;span class="kp"&gt;true&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="ss"&gt;delivered_response: &lt;/span&gt;&lt;span class="n"&gt;delivery&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'smtpResponse'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+        &lt;span class="k"&gt;else&lt;/span&gt;
+          &lt;span class="vi"&gt;@track&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;update&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="ss"&gt;mail_timestamp: &lt;/span&gt;&lt;span class="n"&gt;mail&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'timestamp'&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="nf"&gt;to_date&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="ss"&gt;destination: &lt;/span&gt;&lt;span class="n"&gt;recp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="ss"&gt;notify_type: &lt;/span&gt;&lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'notificationType'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="ss"&gt;is_delivered: &lt;/span&gt;&lt;span class="kp"&gt;true&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="ss"&gt;delivered_response: &lt;/span&gt;&lt;span class="n"&gt;delivery&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'smtpResponse'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+        &lt;span class="k"&gt;end&lt;/span&gt;
+      &lt;span class="k"&gt;end&lt;/span&gt;
+      &lt;span class="n"&gt;render&lt;/span&gt; &lt;span class="ss"&gt;json: &lt;/span&gt;&lt;span class="p"&gt;{}&lt;/span&gt;
+    &lt;span class="k"&gt;rescue&lt;/span&gt; &lt;span class="no"&gt;Exception&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;
+      &lt;span class="n"&gt;render&lt;/span&gt; &lt;span class="ss"&gt;json: &lt;/span&gt;&lt;span class="p"&gt;{}&lt;/span&gt;
+    &lt;span class="k"&gt;end&lt;/span&gt;
+  &lt;span class="k"&gt;end&lt;/span&gt;
 
-&lt;pre&gt;&lt;code&gt;  mail = message['mail']
-  delivery = message['delivery']
-  recipients = delivery['recipients']
-  # process each delivery recipients and update in the table
-  recipients.each do |recp|
-    @track = validation[:domain].trackings.where(source: mail['source'], message_id: mail['messageId']).first
-    if @track.blank?
-      validation[:domain].trackings.create(mail_timestamp: mail['timestamp'].to_date, source: mail['source'], message_id: mail['messageId'], destination: recp, notify_type: message['notificationType'], is_delivered: true, delivered_response: delivery['smtpResponse'])
-    else
-      @track.update(mail_timestamp: mail['timestamp'].to_date, destination: recp, notify_type: message['notificationType'], is_delivered: true, delivered_response: delivery['smtpResponse'])
-    end
-  end
-  render json: {}
-rescue Exception =&amp;gt; e
-  render json: {}
-end   end
-&lt;/code&gt;&lt;/pre&gt;
+  &lt;span class="kp"&gt;protected&lt;/span&gt;
 
-&lt;p&gt;protected&lt;/p&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;data&lt;/span&gt;
+      &lt;span class="no"&gt;JSON&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;parse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;raw_post&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;end&lt;/span&gt;
 
-&lt;pre&gt;&lt;code&gt;def data
-  JSON.parse(request.raw_post)
-end
-
-def message
-  message ||= JSON.parse JSON.parse(request.raw_post)['Message']
-end   end ```
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h4 id="routes"&gt;5. Routes&lt;/h4&gt;
-
-&lt;p&gt;&lt;code&gt;ruby?line_numbers=false
-  post    "/aws/handler/bounce"            =&amp;gt;  "aws#bounce"
-  post    "/aws/handler/complaint"         =&amp;gt;  "aws#complaint"
-  post    "/aws/handler/delivered"         =&amp;gt;  "aws#delivered"
-&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Create http/https endpoint to the required topic with the provided url's (routes.rb).&lt;/p&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;message&lt;/span&gt;
+      &lt;span class="n"&gt;message&lt;/span&gt; &lt;span class="o"&gt;||=&lt;/span&gt; &lt;span class="no"&gt;JSON&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;parse&lt;/span&gt; &lt;span class="no"&gt;JSON&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;parse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;raw_post&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="s1"&gt;'Message'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="k"&gt;end&lt;/span&gt;
+  &lt;span class="k"&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h4&gt;5. Routes&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre class="highlight ruby"&gt;&lt;code&gt;  &lt;span class="n"&gt;post&lt;/span&gt;    &lt;span class="s2"&gt;"/aws/handler/bounce"&lt;/span&gt;            &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt;  &lt;span class="s2"&gt;"aws#bounce"&lt;/span&gt;
+  &lt;span class="n"&gt;post&lt;/span&gt;    &lt;span class="s2"&gt;"/aws/handler/complaint"&lt;/span&gt;         &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt;  &lt;span class="s2"&gt;"aws#complaint"&lt;/span&gt;
+  &lt;span class="n"&gt;post&lt;/span&gt;    &lt;span class="s2"&gt;"/aws/handler/delivered"&lt;/span&gt;         &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt;  &lt;span class="s2"&gt;"aws#delivered"&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Create http/https endpoint to the required topic with the provided url&amp;rsquo;s (routes.rb).&lt;/p&gt;
 
 &lt;p&gt;Migrate the database, install the gem and start handling the tracks.&lt;/p&gt;
 </content>
