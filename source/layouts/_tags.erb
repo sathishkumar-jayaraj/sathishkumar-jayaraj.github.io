@@ -1,6 +1,12 @@
-<h2>Tags</h2>
-<ol>
-  <% blog.tags.each do |tag, articles| %>
-    <li><%= link_to "#{tag} (#{articles.size})", tag_path(tag) %></li>
-  <% end %>
-</ol>
+<div class="row large-spaced">
+  <div class="col-md-8 col-sm-10 col-centered">
+    <h2>Tags</h2>
+    <ol>
+      <% blog.tags.each do |tag, articles| %>
+      <li class="half-spaced">
+        <%= link_to "#{tag} (#{articles.size})", tag_path(tag) %>
+      </li>
+      <% end %>
+    </ol>
+  </div>
+</div>

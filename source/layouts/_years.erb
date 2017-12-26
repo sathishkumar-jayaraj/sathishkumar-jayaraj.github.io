@@ -1,6 +1,12 @@
-<h2>By Year</h2>
-<ol>
-  <% blog.articles.group_by {|a| a.date.year }.each do |year, articles| %>
-    <li><%= link_to "#{year} (#{articles.size})", blog_year_path(year) %></li>
-  <% end %>
-</ol>
+<div class="row large-spaced">
+  <div class="col-md-8 col-sm-10 col-centered">
+    <h2>By Year</h2>
+    <ol>
+      <% blog.articles.group_by {|a| a.date.year }.each do |year, articles| %>
+        <li class="half-spaced">
+          <%= link_to "#{year} (#{articles.size})", blog_year_path(year) %>
+        </li>
+      <% end %>
+    </ol>
+  </div>
+</div>

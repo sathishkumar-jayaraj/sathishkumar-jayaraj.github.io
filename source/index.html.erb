@@ -1,28 +1,6 @@
----
-pageable: true
-per_page: 10
----
-<% if paginate && num_pages > 1 %>
-  <p>Page <%= page_number %> of <%= num_pages %></p>
-
-  <% if prev_page %>
-    <p><%= link_to 'Previous page', prev_page %></p>
-  <% end %>
-<% end %>
-
 <div class="row half-spaced-bottom">
-  <% page_articles.each do |article| %>
-    <div class="col-xs-12 half-spaced">
-      <h2>
-        <%= link_to article.title, article %>
-        <small><%= article.date.strftime('%b %e') %></small>
-      </h2>
-    </div>
-  <% end %>
+  <%= partial "layouts/recent_articles" %>
 </div>
 
-<% if paginate %>
-  <% if next_page %>
-    <p><%= link_to 'Next page', next_page %></p>
-  <% end %>
-<% end %>
+<%= partial "layouts/tags" %>
+<%= partial "layouts/years" %>

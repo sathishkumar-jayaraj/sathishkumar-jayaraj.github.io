@@ -1,33 +1,15 @@
----
-pageable: true
----
-<h1>Archive for
-  <% case page_type
-     when 'day' %>
-    <%= Date.new(year, month, day).strftime('%b %e %Y') %>
-  <% when 'month' %>
-    <%= Date.new(year, month, 1).strftime('%b %Y') %>
-  <% when 'year' %>
-    <%= year %>
-  <% end %>
-</h1>
-
-<% if paginate && num_pages > 1 %>
-  <p>Page <%= page_number %> of <%= num_pages %></p>
-
-  <% if prev_page %>
-    <p><%= link_to 'Previous page', prev_page %></p>
-  <% end %>
-<% end %>
-
-<ul>
-  <% page_articles.each_with_index do |article, i| %>
-    <li><%= link_to article.title, article %> <span><%= article.date.strftime('%b %e') %></span></li>
-  <% end %>
-</ul>
-
-<% if paginate %>
-  <% if next_page %>
-    <p><%= link_to 'Next page', next_page %></p>
-  <% end %>
-<% end %>
+<% dateType = page_type === 'day' ? Date.new(year, month, day).strftime('%b %e %Y') :
+  page_type === 'month' ? Date.new(year, month, 1).strftime('%b %Y') :
+  page_type === 'year' ? year : '' %>
+<div class="row large-spaced">
+  <div class="col-md-8 col-sm-10 col-xs-12 col-centered">
+    <h1>Archive for <%= dateType %></h1>
+    <ol>
+      <% page_articles.each_with_index do |article, i| %>
+        <li class="half-spaced">
+          <%= link_to article.title, article %>
+        </li>
+      <% end %>
+    </ol>
+  </div>
+</div>
